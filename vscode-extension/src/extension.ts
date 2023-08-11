@@ -1,4 +1,5 @@
 import * as net from "net"
+import path = require("path")
 import { ExtensionContext, workspace } from "vscode"
 import {
   LanguageClient,
@@ -58,7 +59,22 @@ function startLangServer(
 }
 
 export function activate(context: ExtensionContext) {
-  client = startLangServerTCP(6001)
+  if (isStartedInDebugMode()) {
+    client = startLangServerTCP(6001)
+  } else {
+    // Production - Distribute the LS as a separate package or within the extension?
+    const cwd = path.join(__dirname)
+
+    // get the vscode python.pythonPath config variable
+    const pythonPath = workspace
+      .getConfiguration("python")
+      .get<string>("pythonPath")
+    if (!pythonPath) {
+      throw new Error("`python.pythonPath` is not set")
+    }
+
+    client = startLangServer(pythonPath, ["-m", "goboscript_lsp"], cwd)
+  }
   client.start()
 }
 

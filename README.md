@@ -20,7 +20,7 @@ All editors who support the Language Server Protocol are supported.
 
 ## VS Code
 
-Install the extension from [/vscode-extension/](/vscode-extension/)
+Install the extension from [VSIX Package](/vscode-extension/goboscript-0.1.0.vsix)
 
 ## Helix Editor
 
@@ -30,6 +30,12 @@ Install the extension from [/vscode-extension/](/vscode-extension/)
 [some configuration here]
 ```
 
+# Installation
+
+```sh
+python -m pip install -e .
+```
+
 # Development
 
 Development is against the VS Code extension.
@@ -37,7 +43,7 @@ Open [/vscode-extension/](/vscode-extension/) in VS Code and hit `F5`.
 
 Start the language server before starting VS Code.
 ```sh
-python -m goboscript-lsp
+python -m goboscript_lsp --tcp --port 6001
 ```
 
 # Footnotes
