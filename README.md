@@ -26,8 +26,14 @@ Install the extension from [VSIX Package](/vscode-extension/goboscript-0.1.0.vsi
 
 [Helix](https://helix-editor.com/) is a modal text editor, use the following configuration.
 
+Add this configuration to `~/.config/helix/languages.toml` (Create the file if doesn't exist.)
 ```toml
-[some configuration here]
+[[language]]
+name = "goboscript"
+scope = "source.goboscript"
+roots = ["stage.gobo"]
+language-server = { command = "python", args = ["-m", "goboscript_lsp"] }
+file-types = ["gobo"]
 ```
 
 # Installation
