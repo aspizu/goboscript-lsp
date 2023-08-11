@@ -1,0 +1,67 @@
+{
+  "$schema": "https://raw.githubusercontent.com/martinring/tmlanguage/master/tmlanguage.json",
+  "name": "goboscript",
+  "patterns": [
+    {
+      "name": "comment.block",
+      "begin": "/\\*",
+      "end": "\\*/"
+    },
+    {
+      "name": "comment.line",
+      "begin": "//",
+      "end": "$"
+    },
+    {
+      "name": "punctuation",
+      "match": "[,;]"
+    },
+    {
+      "name": "keyword.operator",
+      "match": "([=+\\-*/%&<>]|\\b(not|and|or)\\b)"
+    },
+    {
+      "name": "constant",
+      "match": "[_a-zA-Z][_a-zA-Z0-9]*!"
+    },
+    {
+      "name": "variable.parameter",
+      "match": "\\$[_a-zA-Z][_a-zA-Z0-9]*"
+    },
+    {
+      "name": "keyword.control",
+      "begin": "\\bdef\\b[\\s\\n]*",
+      "end": "[\\s\\n{]",
+      "patterns": [
+        {
+          "name": "entity.name.function",
+          "match": "[_a-zA-Z][_a-zA-Z0-9]*"
+        }
+      ]
+    },
+    {
+      "name": "entity.name.function",
+      "match": "[_a-zA-Z][_a-zA-Z0-9]*[\\s\\n]*\\("
+    },
+    {
+      "name": "keyword.control.goboscript",
+      "match": "\\b(local|use|costumes|datalist|imagelist|nowarp|macro|def|if|elif|else|until|repeat|forever)\\b"
+    },
+    {
+      "name": "entity.name.class",
+      "match": "\\b(on|onflag|onkey|onclick|onbackdrop|onloudness|ontimer|onclone)\\b"
+    },
+    {
+      "name": "string.quoted.double.goboscript",
+      "begin": "\"",
+      "end": "\"",
+      "patterns": [
+        {
+          "name": "constant.character.escape.goboscript",
+          "match": "\\\\."
+        }
+      ]
+    }
+  ],
+  "scopeName": "text.goboscript"
+}

@@ -1,0 +1,55 @@
+{
+  "name": "goboscript",
+  "displayName": "goboscript",
+  "description": "",
+  "version": "0.0.1",
+  "engines": {
+    "vscode": "^1.81.0"
+  },
+  "categories": [
+    "Programming Languages"
+  ],
+  "contributes": {
+    "languages": [
+      {
+        "id": "goboscript",
+        "aliases": [
+          "goboscript"
+        ],
+        "extensions": [
+          ".gobo"
+        ],
+        "configuration": "./language-configuration.json"
+      }
+    ],
+    "grammars": [
+      {
+        "language": "goboscript",
+        "scopeName": "text.goboscript",
+        "path": "./syntaxes/goboscript.tmLanguage.json"
+      }
+    ],
+    "configuration": {
+      "type": "object",
+      "title": "goboscript Language Server Configuration",
+      "properties": {
+        "larkLanguageServer.someConfig": {
+          "scope": "resource",
+          "type": "string",
+          "default": "some default."
+        }
+      }
+    }
+  },
+  "main": "./out/extension",
+  "scripts": {
+    "compile": "tsc -p ./",
+    "watch": "tsc -watch -p ./",
+    "lint": "eslint src --ext ts"
+  },
+  "dependencies": {
+    "@types/node": "^20.4.9",
+    "@types/vscode": "^1.81.0",
+    "vscode-languageclient": "^8.1.0"
+  }
+}

@@ -1,0 +1,5 @@
+[tool.pyright]
+typeCheckingMode = "strict"
+useLibraryCodeForTypes = true
+reportUnknownMemberType = false
+reportUnknownArgumentType = false
