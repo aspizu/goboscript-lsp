@@ -9,7 +9,7 @@ __all__ = [
     "DeclarationScope",
 ]
 
-IDENTIFIER_CHARS = string.ascii_letters + string.digits + "_!"
+IDENTIFIER_CHARS = string.ascii_letters + string.digits + "_!$"
 from dataclasses import dataclass
 
 

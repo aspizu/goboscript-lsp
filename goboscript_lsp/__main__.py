@@ -27,7 +27,6 @@ from lsprotocol.types import (
     MarkupKind,
     ReferenceParams,
     RenameParams,
-    TextDocumentEdit,
     WorkspaceEdit,
 )
 from pygls.server import LanguageServer
@@ -127,6 +126,14 @@ def get_definition(ls: LanguageServer, params: DefinitionParams) -> LocationLink
             return LocationLink(
                 document.uri, definitionable.definition(), definitionable.definition()
             )
+        if isinstance(parser.block_scope, FunctionScope):
+            if function := document.source_info.functions.get(parser.block_scope.name):
+                if parser.word[0] == "$":
+                    parser.word = parser.word[1:]
+                if argument := function.arguments.get(parser.word):
+                    return LocationLink(
+                        document.uri, argument.definition(), argument.definition()
+                    )
 
 
 @server.feature(TEXT_DOCUMENT_REFERENCES)
@@ -140,7 +147,7 @@ def get_references(
     position = position_to_index(source, params.position)
     parser = IncompleteParser(source, position)
     if parser.word:
-        if referencesable := (
+        if referenceable := (
             document.source_info.functions.get(parser.word)
             or document.source_info.macros.get(parser.word)
             or document.source_info.block_macros.get(parser.word)
@@ -149,8 +156,17 @@ def get_references(
         ):
             return [
                 Location(document.uri, token_to_range(i))
-                for i in referencesable.references
+                for i in referenceable.references
             ]
+        if isinstance(parser.block_scope, FunctionScope):
+            if function := document.source_info.functions.get(parser.block_scope.name):
+                if parser.word[0] == "$":
+                    parser.word = parser.word[1:]
+                if referenceable := function.arguments.get(parser.word):
+                    return [
+                        Location(document.uri, token_to_range(i))
+                        for i in referenceable.references
+                    ]
 
 
 @server.feature(TEXT_DOCUMENT_RENAME)

@@ -4,7 +4,7 @@ from lark.lexer import Token
 from lark.tree import Tree
 from lark.visitors import Interpreter, Visitor
 
-from .types import BlockMacro, Function, List, Macro, Variable
+from .types import Argument, BlockMacro, Function, List, Macro, Variable
 
 __all__ = ["SourceInfo"]
 
@@ -48,7 +48,9 @@ class SourceInfo(Interpreter[Token, None]):
         # body = cast(Tree[Token], node.children[-1])
         if arguments == [None]:
             arguments = []
-        function = Function(name, arguments, no_warp, {}, [])
+        function = Function(
+            name, {str(i): Argument(i, []) for i in arguments}, no_warp, {}, []
+        )
         self.functions[str(name)] = function
 
     def declr_function_nowarp(self, node: Tree[Token]):
@@ -197,3 +199,11 @@ class SourceInfoVisitor(Visitor[Token]):
     listindex = listdelete
     listcontains = listdelete
     listlength = listdelete
+
+    def argument(self, node: Tree[Token]):
+        if not self.function:
+            return
+        name = cast(Token, node.children[0])
+        qualname = name[1:]
+        if argument := self.function.arguments.get(qualname):
+            argument.references.append(name)

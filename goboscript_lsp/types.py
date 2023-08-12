@@ -81,9 +81,18 @@ class Documentation:
 
 
 @dataclass
+class Argument(Definitionable):
+    name: Token
+    references: list[Token]
+
+    def definition(self):
+        return token_to_range(self.name)
+
+
+@dataclass
 class Function(Hoverable, Definitionable):
     name: Token
-    arguments: list[Token]
+    arguments: dict[str, Argument]
     no_warp: bool
     locals: dict[str, Variable]
     references: list[Token]
