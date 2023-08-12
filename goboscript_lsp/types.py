@@ -27,6 +27,7 @@ class Definitionable:
 @dataclass
 class Variable(Definitionable):
     name: Token
+    references: list[Token]
     doc: Token | None = None
 
     def definition(self):
@@ -36,6 +37,7 @@ class Variable(Definitionable):
 @dataclass
 class List(Definitionable):
     name: Token
+    references: list[Token]
     doc: Token | None = None
 
     def definition(self):
@@ -84,6 +86,7 @@ class Function(Hoverable, Definitionable):
     arguments: list[Token]
     no_warp: bool
     locals: dict[str, Variable]
+    references: list[Token]
     doc: Token | None = None
 
     def hover(self) -> str:
@@ -99,6 +102,7 @@ class Function(Hoverable, Definitionable):
 class Macro(Hoverable, Definitionable):
     name: Token
     arguments: list[Token]
+    references: list[Token]
     doc: Token | None = None
 
     def hover(self) -> str:
@@ -116,6 +120,7 @@ class Macro(Hoverable, Definitionable):
 class BlockMacro(Hoverable, Definitionable):
     name: Token
     arguments: list[Token]
+    references: list[Token]
     doc: Token | None = None
 
     def hover(self) -> str:

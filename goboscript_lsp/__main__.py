@@ -8,6 +8,8 @@ from lsprotocol.types import (
     TEXT_DOCUMENT_DID_OPEN,
     TEXT_DOCUMENT_DID_SAVE,
     TEXT_DOCUMENT_HOVER,
+    TEXT_DOCUMENT_REFERENCES,
+    TEXT_DOCUMENT_RENAME,
     CompletionItem,
     CompletionItemKind,
     CompletionList,
@@ -19,12 +21,19 @@ from lsprotocol.types import (
     DidSaveTextDocumentParams,
     Hover,
     HoverParams,
+    Location,
     LocationLink,
     MarkupContent,
     MarkupKind,
+    ReferenceParams,
+    RenameParams,
+    WorkspaceEdit,
 )
 from pygls.server import LanguageServer
 
+from goboscript_lsp.types import token_to_range
+
+from .sourceedit import SourceEdit
 from .incomplete import FunctionScope, IncompleteParser, StackScope, UnknownScope
 from .lib import lark_exception_to_diagnostic, parse_documentation, position_to_index
 from .parser import parser
@@ -119,6 +128,44 @@ def get_definition(ls: LanguageServer, params: DefinitionParams) -> LocationLink
             )
 
 
+@server.feature(TEXT_DOCUMENT_REFERENCES)
+def get_references(
+    ls: LanguageServer, params: ReferenceParams
+) -> list[Location] | None:
+    if params.text_document.uri not in documents:
+        return
+    source = ls.workspace.get_document(params.text_document.uri).source
+    document = documents[params.text_document.uri]
+    position = position_to_index(source, params.position)
+    parser = IncompleteParser(source, position)
+    if parser.word:
+        if referencesable := (
+            document.source_info.functions.get(parser.word)
+            or document.source_info.macros.get(parser.word)
+            or document.source_info.block_macros.get(parser.word)
+            or document.source_info.variables.get(parser.word)
+            or document.source_info.lists.get(parser.word)
+        ):
+            return [
+                Location(document.uri, token_to_range(i))
+                for i in referencesable.references
+            ]
+
+
+@server.feature(TEXT_DOCUMENT_RENAME)
+def rename_symbol(ls: LanguageServer, params: RenameParams) -> WorkspaceEdit | None:
+    if params.text_document.uri not in documents:
+        return
+    source = ls.workspace.get_document(params.text_document.uri).source
+    document = documents[params.text_document.uri]
+    document.update_ast(source)
+    if document.parse_err:
+        return
+    return SourceEdit(document.ast, document.source_info).rename_symbol(
+        params.position, params.new_name
+    )
+
+
 @server.feature(TEXT_DOCUMENT_COMPLETION)
 def get_completion(
     ls: LanguageServer, params: CompletionParams
@@ -183,7 +230,7 @@ def main():
         "--tcp", action="store_true", help="Use TCP server instead of stdio"
     )
     parser.add_argument("--host", default="127.0.0.1", help="Bind to this address")
-    parser.add_argument("--port", type=int, default=2087, help="Bind to this port")
+    parser.add_argument("--port", type=int, default=6001, help="Bind to this port")
     args = parser.parse_args()
 
     if args.tcp:

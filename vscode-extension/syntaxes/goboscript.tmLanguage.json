@@ -52,6 +52,10 @@
       "match": "\\b(on|onflag|onkey|onclick|onbackdrop|onloudness|ontimer|onclone)\\b"
     },
     {
+      "name": "constant.numeric",
+      "match": "\\b[0-9]+(\\.[0-9]+)?\\b"
+    },
+    {
       "name": "string.quoted.double.goboscript",
       "begin": "\"",
       "end": "\"",

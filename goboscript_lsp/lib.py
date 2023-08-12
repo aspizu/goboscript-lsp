@@ -4,7 +4,8 @@ from lark.exceptions import (
     UnexpectedInput,
     UnexpectedToken,
 )
-from lsprotocol.types import Diagnostic, Position, Range
+from lark import Tree, Token
+from lsprotocol.types import Diagnostic, DiagnosticSeverity, Position, Range
 
 from .types import Documentation
 
@@ -32,11 +33,38 @@ def lark_exception_to_diagnostic(err: UnexpectedInput) -> Diagnostic:
     )
     if isinstance(err, UnexpectedCharacters):
         expected = ", ".join(err.allowed)
-        return Diagnostic(range, f"Expected one of: {expected}")
+        return Diagnostic(
+            range,
+            f"Expected one of: {expected}",
+            DiagnosticSeverity.Error,
+            "UnexpectedCharacters",
+        )
     elif isinstance(err, UnexpectedToken):
+        print(err.token.value)
         expected = ", ".join(err.expected or err.accepts)
-        return Diagnostic(range, f"Expected one of: {expected}")
+        return Diagnostic(
+            range,
+            f"Expected one of: {expected}",
+            DiagnosticSeverity.Error,
+            "UnexpectedToken",
+        )
     elif isinstance(err, UnexpectedEOF):
-        return Diagnostic(range, f"Unexpected EOF")
+        return Diagnostic(
+            range, f"Unexpected end of file.", DiagnosticSeverity.Error, "UnexpectedEOF"
+        )
     else:
         raise ValueError(err)
+
+
+def search_token(node: Tree[Token] | Token, line: int, column: int) -> Token | None:
+    if (
+        isinstance(node, Token)
+        and node.column is not None
+        and node.line == line
+        and node.column <= column < node.column + len(node)
+    ):
+        return node
+    elif isinstance(node, Tree) and node.meta.line <= line < node.meta.end_line:
+        for child in node.children:
+            if found := search_token(child, line, column):
+                return found
