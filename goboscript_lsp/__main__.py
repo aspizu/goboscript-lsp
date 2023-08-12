@@ -27,6 +27,7 @@ from lsprotocol.types import (
     MarkupKind,
     ReferenceParams,
     RenameParams,
+    TextDocumentEdit,
     WorkspaceEdit,
 )
 from pygls.server import LanguageServer
@@ -161,8 +162,12 @@ def rename_symbol(ls: LanguageServer, params: RenameParams) -> WorkspaceEdit | N
     document.update_ast(source)
     if document.parse_err:
         return
-    return SourceEdit(document.ast, document.source_info).rename_symbol(
-        params.position, params.new_name
+    return WorkspaceEdit(
+        {
+            document.uri: SourceEdit(document.ast, document.source_info).rename_symbol(
+                params.position, params.new_name
+            )
+        }
     )
 
 

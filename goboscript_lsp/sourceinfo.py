@@ -23,9 +23,24 @@ class SourceInfo(Interpreter[Token, None]):
                 "declr_function_nowarp",
             ):
                 name = child.children[0]
+                SourceInfoInterpreter(self, child, self.functions.get(str(name)))
+            elif isinstance(child, Tree):
+                SourceInfoInterpreter(self, child)
+        for child in tree.children:
+            if isinstance(child, Tree) and child.data in (
+                "declr_function",
+                "declr_function_nowarp",
+            ):
+                name = child.children[0]
                 SourceInfoVisitor(self, child, function=self.functions.get(str(name)))
             elif isinstance(child, Tree):
                 SourceInfoVisitor(self, child)
+
+    def imagelist(self, node: Tree[Token]):
+        name = cast(Token, node.children[0])
+        self.lists[str(name)] = List(name, [])
+
+    datalist = imagelist
 
     def declr_function(self, node: Tree[Token], no_warp: bool = False):
         name = cast(Token, node.children[0])
@@ -56,7 +71,7 @@ class SourceInfo(Interpreter[Token, None]):
         self.block_macros[str(name)] = BlockMacro(name, arguments, [])
 
 
-class SourceInfoVisitor(Visitor[Token]):
+class SourceInfoInterpreter(Interpreter[Token, None]):
     def __init__(
         self,
         source_info: SourceInfo,
@@ -65,7 +80,18 @@ class SourceInfoVisitor(Visitor[Token]):
     ):
         self.source_info = source_info
         self.function = function
-        self.visit(tree)
+        self.visit_children(tree)
+
+    def stack(self, node: Tree[Token]):
+        self.visit_children(node)
+
+    block_if = stack
+    block_if_else = stack
+    block_if_elif = stack
+    block_if_elif_else = stack
+    until = stack
+    forever = stack
+    repeat = stack
 
     def varset(self, node: Tree[Token]):
         name = node.children[0]
@@ -98,6 +124,18 @@ class SourceInfoVisitor(Visitor[Token]):
             list_.references.append(name)
             return
         self.source_info.lists[str(name)] = List(name, [])
+
+
+class SourceInfoVisitor(Visitor[Token]):
+    def __init__(
+        self,
+        source_info: SourceInfo,
+        tree: Tree[Token],
+        function: Function | None = None,
+    ):
+        self.source_info = source_info
+        self.function = function
+        self.visit(tree)
 
     def block(self, node: Tree[Token]):
         name = node.children[0]

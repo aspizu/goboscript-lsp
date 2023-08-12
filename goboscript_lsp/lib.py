@@ -56,15 +56,17 @@ def lark_exception_to_diagnostic(err: UnexpectedInput) -> Diagnostic:
         raise ValueError(err)
 
 
-def search_token(node: Tree[Token] | Token, line: int, column: int) -> Token | None:
+def search_token(node: Tree[Token] | Token, position: Position) -> Token | None:
+    line = position.line + 1
+    column = position.character + 1
     if (
         isinstance(node, Token)
         and node.column is not None
         and node.line == line
-        and node.column <= column < node.column + len(node)
+        and node.column <= column <= node.column + len(node)
     ):
         return node
-    elif isinstance(node, Tree) and node.meta.line <= line < node.meta.end_line:
+    elif isinstance(node, Tree) and node.meta.line <= line <= node.meta.end_line:
         for child in node.children:
-            if found := search_token(child, line, column):
+            if found := search_token(child, position):
                 return found
