@@ -47,6 +47,76 @@ class DeclarationScope(BlockScope):
 
 
 @dataclass
+class Token:
+    value: str
+    line: int
+    col: int
+
+
+def lexer(source: str, pos_line: int, pos_col: int):
+    comment = False
+    quote = False
+    line = 0
+    col = 0
+    i = 0
+    tokens: list[Token] = []
+    token: Token = Token("", line, col)
+    while i < len(source):
+        if source[i] == "\n":
+            line += 1
+            col = 0
+        if comment:
+            if source[i] == "*" and source[i + 1] == "/":
+                token.value += "*/"
+                col += 1
+                i += 1
+                comment = False
+                tokens.append(token)
+                token = Token("", line, col)
+            elif source[i] == "\n":
+                line += 1
+                col = 0
+            else:
+                token.value += source[i]
+        else:
+            if quote:
+                if source[i] == '"':
+                    quote = False
+                    token.value += '"'
+                    tokens.append(token)
+                    token = Token("", line, col)
+                elif source[i] == "\n":
+                    line += 1
+                    col = 0
+                else:
+                    token.value += source[i]
+            else:
+                if source[i] == "/" and source[i + 1] == "*":
+                    comment = True
+                    token = Token("/*", line, col)
+                    col += 1
+                    i += 1
+                elif source[i] == '"':
+                    quote = True
+                    token = Token('"', line, col)
+                elif source[i] in " ()[]":
+                    if token.value != "":
+                        tokens.append(token)
+                    token = Token("", line, col)
+
+                elif source[i] == "\n":
+                    if token.value != "":
+                        tokens.append(token)
+                    line += 1
+                    col = 0
+                    token = Token("", line, col)
+                else:
+                    token.value += source[i]
+        col += 1
+        i += 1
+
+
+@dataclass
 class IncompleteParser:
     word_position: int
     word: str | None
